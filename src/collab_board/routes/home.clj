@@ -18,7 +18,7 @@
   (with-channel req channel
   	(swap! clients assoc channel true)
   	(doseq [[id pth] @paths]
-  		;(println (str "Sending path: " id))
+  		(println (str "Sending path: " id pth))
   		(send! channel (json/write-str {"id" id "path" pth "action" "ADD"})))
     (on-close channel 
     	(fn [status] 

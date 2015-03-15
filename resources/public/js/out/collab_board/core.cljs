@@ -17,14 +17,16 @@
 (def canvas 
     (.getElementById js/document "collab-board"))
 
+
+(def socket (atom nil))
+
 (def ctx 
   (.getContext canvas "2d"))
 
 (defn debug [s]
   (.debug js/console s))
 
-(def socket
-  (js/WebSocket. (str "ws://" (.-host js/location) "/path-updates")))
+
 
 (defn get-uuid [] 
   (.uuid js/window))
@@ -33,7 +35,7 @@
 (defn send-path [pth id action] 
   (let [msg (.stringify js/JSON (clj->js {"id" id "path" pth "action" action}))]
     (debug (str "sending message " msg))
-    (.send socket msg)))
+    (.send @socket msg)))
 
 ;Adds new path with id and points [[x y] ...]
 (defn add-path [id pth]
@@ -173,13 +175,21 @@
 
 ; ====== END EVENTS ======
 
+
+(defn init-socket []
+  (debug "Initialzing socket")
+  (let [s (js/WebSocket. (str "ws://" (.-host js/location) "/path-updates"))]
+    (.addEventListener s "close" init-socket) ; reconnect on close
+    (reset! socket s)))
+
 ; Init
 (defn init! []
   (debug "Initializing")
+  (init-socket)
   (.addEventListener canvas "mousedown" canvas-mousedown)
   (.addEventListener canvas "mouseup" canvas-mouseup)
   (.addEventListener canvas "mousemove" canvas-mousemove)
-  (.addEventListener socket "message" on-path-update)
+  (.addEventListener @socket "message" on-path-update)
   (.addEventListener canvas "contextmenu" (fn [ev] false))
   (.addEventListener js/window "keydown" key-down)
   (.addEventListener js/window "keyup" key-up))
