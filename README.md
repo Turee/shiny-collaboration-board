@@ -1,6 +1,7 @@
 # Collaboration board
 
 A shared canvas on which you can draw on. Draw using left mouse button and erase drawing by holding down left ctrl and left mouse button.
+Communication between clients and server is implemented with WebSockets.
 
 ## Prerequisites
 
